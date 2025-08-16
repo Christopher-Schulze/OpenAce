@@ -1,0 +1,125 @@
+[workspace]
+members = ["."]
+
+# Use older libp2p version to avoid yamux compatibility issues
+
+[package]
+name = "openace-rust"
+version = "0.9.0"
+edition = "2021"
+authors = ["CR"]
+description = "Rust implementation of OpenAce streaming engine"
+license = "MIT"
+
+# Binary configuration with OS and platform information
+[[bin]]
+name = "OpenAce-Engine"
+path = "src/main.rs"
+
+[dependencies]
+# Async runtime and utilities
+tokio = { version = "1.40", features = ["full"] }
+tokio-rustls = "0.26"
+rustls = "0.23"
+futures = "0.3"
+async-trait = "0.1"
+lazy_static = "1.4"
+
+# Logging and tracing
+log = "0.4"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-appender = "0.2"
+
+# Concurrency and synchronization
+parking_lot = "0.12"
+arc-swap = "1.6"
+atomic = "0.5"
+
+# Media processing (disabled for now due to missing system dependencies)
+# ffmpeg-next = "6.0"
+
+# Networking and P2P
+libp2p = { version = "0.52", features = ["tcp", "mdns", "noise", "yamux", "gossipsub", "kad"] }
+tokio-util = { version = "0.7", features = ["codec"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+bincode = "1.3"
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Configuration
+config = "0.14"
+notify = "6.0"
+crossbeam-channel = "0.5"
+
+# Memory management and utilities
+bytes = "1.5"
+memmap2 = "0.9"
+uuid = { version = "1.0", features = ["v4"] }
+once_cell = "1.19"
+chrono = { version = "0.4", features = ["serde"] }
+sysinfo = "0.30"
+
+# C API and FFI
+libc = "0.2"
+cbindgen = "0.27"
+rand = "0.8"
+encoding_rs = "0.8"
+url = "2.5"
+
+# Python integration (optional)
+pyo3 = { version = "0.22", features = ["auto-initialize"], optional = true }
+
+# Replace unmaintained dependencies
+yaml-rust2 = "0.8"
+
+# Testing
+[dev-dependencies]
+tokio-test = "0.4"
+proptest = "1.4"
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[build-dependencies]
+chrono = { version = "0.4", features = ["serde"] }
+
+[features]
+c_api = []
+python = ["pyo3"]
+standalone = []
+
+[[bench]]
+name = "benchmarks"
+harness = false
+path = "scripts/benchmarks/benchmarks.rs"
+
+[profile.release]
+opt-level = 3
+debug = false
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.dev]
+opt-level = 0
+debug = true
+lto = false
+codegen-units = 256
+
+# Cross-compilation targets configuration
+[target.x86_64-pc-windows-gnu]
+linker = "x86_64-w64-mingw32-gcc"
+
+[target.aarch64-pc-windows-msvc]
+linker = "rust-lld"
+
+[target.x86_64-unknown-linux-gnu]
+linker = "gcc"
+
+[target.aarch64-unknown-linux-gnu]
+linker = "aarch64-linux-gnu-gcc"
